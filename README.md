@@ -1,5 +1,8 @@
 # LaplateformeTracker
 
+## 📁 Structure du projet
+
+```
 LaplateformeTracker/
 │
 ├── src/
@@ -7,14 +10,14 @@ LaplateformeTracker/
 │       └── java/
 │           └── com/laplateforme/tracker/
 │               │
-│               ├── Main.java                    ← point d'entrée
+│               ├── Main.java                    # Point d'entrée
 │               │
 │               ├── model/
-│               │   ├── Student.java             ← POJO entité
-│               │   ├── User.java                ← authentification
+│               │   ├── Student.java             # Entité (POJO)
+│               │   ├── User.java                # Gestion authentification
 │               │   └── dao/
-│               │       ├── StudentDAO.java       ← interface CRUD
-│               │       └── StudentDAOImpl.java   ← implémentation JDBC
+│               │       ├── StudentDAO.java       # Interface CRUD
+│               │       └── StudentDAOImpl.java   # Implémentation JDBC
 │               │
 │               ├── controller/
 │               │   ├── StudentController.java
@@ -30,18 +33,20 @@ LaplateformeTracker/
 │               │   └── StatsView.java
 │               │
 │               ├── service/
-│               │   ├── ImportExportService.java  ← CSV / JSON / XML
-│               │   ├── BackupService.java        ← sauvegarde auto
+│               │   ├── ImportExportService.java  # CSV / JSON / XML
+│               │   ├── BackupService.java        # Sauvegarde automatique
 │               │   └── AuthService.java
 │               │
 │               └── util/
-│                   ├── DatabaseConnection.java   ← singleton JDBC
+│                   ├── DatabaseConnection.java   # Singleton JDBC
 │                   └── Validator.java
 │
 ├── resources/
-│   ├── fxml/                                    ← fichiers JavaFX UI
+│   ├── fxml/                                    # Interfaces JavaFX
 │   └── db/
-│       └── init.sql                             ← script création BDD
+│       └── init.sql                             # Script de création BDD
 │
-├── pom.xml                                      ← Maven (deps JDBC, JavaFX)
+├── pom.xml                                      # Configuration Maven
 └── README.md
+```
+
