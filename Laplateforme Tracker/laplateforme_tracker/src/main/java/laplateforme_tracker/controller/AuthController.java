@@ -16,11 +16,11 @@ public class AuthController {
      */
     public boolean login(String username, String password) {
         if (username == null || username.isBlank()) {
-            System.err.println("❌ Le nom d'utilisateur est vide.");
+            System.err.println(" Ah tu es un sans nom dommage .");
             return false;
         }
         if (password == null || password.isEmpty()) {
-            System.err.println("❌ Le mot de passe est vide.");
+            System.err.println(" Le mot de passe est vide débile.");
             return false;
         }
         return authService.authenticate(username, password);
