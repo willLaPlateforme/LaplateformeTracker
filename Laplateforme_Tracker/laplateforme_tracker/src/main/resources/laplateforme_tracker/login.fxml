@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.gestionetudiants.ui.LoginView"
+      alignment="CENTER"
+      spacing="16"
+      minWidth="450" minHeight="380">
+
+    <padding><Insets top="40" right="60" bottom="40" left="60"/></padding>
+
+    <!-- Titre -->
+    <Label text="Gestion des Étudiants" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    <Label text="Veuillez vous connecter pour continuer." style="-fx-text-fill: gray;"/>
+
+    <Separator/>
+
+    <!-- Champ nom d'utilisateur -->
+    <VBox spacing="4">
+        <Label text="Nom d'utilisateur"/>
+        <TextField fx:id="champNomUtilisateur" promptText="Entrez votre identifiant" maxWidth="Infinity"/>
+    </VBox>
+
+    <!-- Champ mot de passe -->
+    <VBox spacing="4">
+        <Label text="Mot de passe"/>
+        <PasswordField fx:id="champMotDePasse" promptText="Entrez votre mot de passe" maxWidth="Infinity"/>
+    </VBox>
+
+    <!-- Message d'erreur (caché par défaut) -->
+    <Label fx:id="labelErreur"
+           text=""
+           style="-fx-text-fill: red;"
+           visible="false"
+           wrapText="true"/>
+
+    <!-- Bouton connexion -->
+    <Button text="Se connecter"
+            onAction="#seConnecter"
+            maxWidth="Infinity"
+            defaultButton="true"/>
+
+    <Separator/>
+
+    <!-- Indications pour tester -->
+    <Label text="(Prototype : tout identifiant est accepté)"
+           style="-fx-text-fill: gray; -fx-font-size: 11px;"/>
+
+</VBox>

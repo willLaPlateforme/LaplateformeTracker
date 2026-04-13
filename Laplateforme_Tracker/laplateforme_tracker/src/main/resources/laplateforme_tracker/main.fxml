@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.gestionetudiants.ui.MainView">
+
+    <!-- ═══════════════════════════════════════════
+         BARRE DU HAUT
+    ════════════════════════════════════════════ -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-padding: 10 20 10 20; -fx-background-color: #2c3e50;">
+            <Label text="Gestion des Étudiants" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="labelUtilisateur" text="Connecté : -" style="-fx-text-fill: white;"/>
+            <Button text="Déconnexion" onAction="#seDeconnecter"/>
+        </HBox>
+    </top>
+
+    <!-- ═══════════════════════════════════════════
+         MENU LATÉRAL GAUCHE
+    ════════════════════════════════════════════ -->
+    <left>
+        <VBox spacing="6" style="-fx-padding: 16 10 16 10; -fx-background-color: #ecf0f1;" minWidth="200">
+
+            <Label text="NAVIGATION" style="-fx-font-size: 10px; -fx-text-fill: gray; -fx-padding: 0 0 4 4;"/>
+
+            <Button text="📋  Liste des étudiants"
+                    onAction="#afficherListe"
+                    maxWidth="Infinity"
+                    alignment="CENTER_LEFT"/>
+
+            <Button text="🔍  Recherche avancée"
+                    onAction="#afficherRecherche"
+                    maxWidth="Infinity"
+                    alignment="CENTER_LEFT"/>
+
+            <Button text="📊  Statistiques"
+                    onAction="#afficherStatistiques"
+                    maxWidth="Infinity"
+                    alignment="CENTER_LEFT"/>
+
+            <Button text="💾  Import / Export"
+                    onAction="#afficherImportExport"
+                    maxWidth="Infinity"
+                    alignment="CENTER_LEFT"/>
+
+            <Button text="🔄  Sauvegarde auto"
+                    onAction="#afficherSauvegarde"
+                    maxWidth="Infinity"
+                    alignment="CENTER_LEFT"/>
+
+        </VBox>
+    </left>
+
+    <!-- ═══════════════════════════════════════════
+         ZONE CENTRALE — TOUS LES PANNEAUX
+         (un seul visible à la fois)
+    ════════════════════════════════════════════ -->
+    <center>
+        <StackPane style="-fx-padding: 20;">
+
+            <!-- ─────────────────────────────────
+                 PANNEAU 1 : LISTE DES ÉTUDIANTS
+            ───────────────────────────────── -->
+            <VBox fx:id="panneauListe" spacing="12" visible="true">
+
+                <Label text="Liste des étudiants" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                <!-- Barre d'outils : recherche rapide + tri + bouton ajouter -->
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <TextField promptText="Rechercher par nom..." prefWidth="220"/>
+                    <Label text="Trier par :"/>
+                    <ComboBox prefWidth="120">
+                        <items>
+                            <javafx.collections.FXCollections fx:factory="observableArrayList">
+                                <String fx:value="Nom"/>
+                                <String fx:value="Prénom"/>
+                                <String fx:value="Âge"/>
+                                <String fx:value="Moyenne"/>
+                            </javafx.collections.FXCollections>
+                        </items>
+                        <value><String fx:value="Nom"/></value>
+                    </ComboBox>
+                    <Button text="↑ Asc"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="+ Ajouter un étudiant"/>
+                </HBox>
+
+                <!-- Tableau des étudiants -->
+                <TableView fx:id="tableEtudiants" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colNom"     text="Nom"     prefWidth="150"/>
+                        <TableColumn fx:id="colPrenom"  text="Prénom"  prefWidth="150"/>
+                        <TableColumn fx:id="colAge"     text="Âge"     prefWidth="70"/>
+                        <TableColumn fx:id="colMoyenne" text="Moyenne" prefWidth="100"/>
+                        <TableColumn fx:id="colMention" text="Mention" prefWidth="130"/>
+                    </columns>
+                    <placeholder><Label text="Aucun étudiant à afficher."/></placeholder>
+                </TableView>
+
+                <!-- Pagination + export -->
+                <HBox spacing="8" alignment="CENTER">
+                    <Button text="◀ Précédent"/>
+                    <Label text="Page 1 / 1" style="-fx-text-fill: gray;"/>
+                    <Button text="Suivant ▶"/>
+                    <Label text="  Par page :"/>
+                    <ComboBox prefWidth="80">
+                        <items>
+                            <javafx.collections.FXCollections fx:factory="observableArrayList">
+                                <String fx:value="5"/>
+                                <String fx:value="10"/>
+                                <String fx:value="20"/>
+                                <String fx:value="50"/>
+                            </javafx.collections.FXCollections>
+                        </items>
+                        <value><String fx:value="10"/></value>
+                    </ComboBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="10 étudiant(s)" style="-fx-text-fill: gray;"/>
+                    <Button text="Exporter CSV"/>
+                    <Button text="Exporter HTML"/>
+                </HBox>
+
+            </VBox>
+
+            <!-- ─────────────────────────────────
+                 PANNEAU 2 : RECHERCHE AVANCÉE
+            ───────────────────────────────── -->
+            <VBox fx:id="panneauRecherche" spacing="16" visible="false">
+
+                <Label text="Recherche avancée" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                <!-- Critères de recherche -->
+                <GridPane hgap="16" vgap="10">
+                    <Label text="Âge minimum :"      GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField promptText="ex: 18"   GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="100"/>
+
+                    <Label text="Âge maximum :"      GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField promptText="ex: 25"   GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="100"/>
+
+                    <Label text="Moyenne minimum :"  GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField promptText="ex: 10.0" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="100"/>
+
+                    <Label text="Moyenne maximum :"  GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField promptText="ex: 20.0" GridPane.columnIndex="3" GridPane.rowIndex="1" prefWidth="100"/>
+
+                    <Label text="Mention :"          GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <ComboBox                         GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="150">
+                        <items>
+                            <javafx.collections.FXCollections fx:factory="observableArrayList">
+                                <String fx:value="(Toutes)"/>
+                                <String fx:value="Très Bien"/>
+                                <String fx:value="Bien"/>
+                                <String fx:value="Assez Bien"/>
+                                <String fx:value="Passable"/>
+                                <String fx:value="Insuffisant"/>
+                            </javafx.collections.FXCollections>
+                        </items>
+                        <value><String fx:value="(Toutes)"/></value>
+                    </ComboBox>
+                </GridPane>
+
+                <HBox spacing="8">
+                    <Button text="Lancer la recherche"/>
+                    <Button text="Réinitialiser"/>
+                </HBox>
+
+                <!-- Résultats -->
+                <Label text="Résultats :" style="-fx-font-weight: bold;"/>
+                <TableView fx:id="tableRecherche" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colRechNom"     text="Nom"     prefWidth="150"/>
+                        <TableColumn fx:id="colRechPrenom"  text="Prénom"  prefWidth="150"/>
+                        <TableColumn fx:id="colRechAge"     text="Âge"     prefWidth="70"/>
+                        <TableColumn fx:id="colRechMoyenne" text="Moyenne" prefWidth="100"/>
+                        <TableColumn fx:id="colRechMention" text="Mention" prefWidth="130"/>
+                    </columns>
+                    <placeholder><Label text="Lancez une recherche pour voir les résultats."/></placeholder>
+                </TableView>
+
+                <HBox spacing="8" alignment="CENTER_RIGHT">
+                    <Button text="Exporter résultats CSV"/>
+                    <Button text="Exporter résultats HTML"/>
+                </HBox>
+
+            </VBox>
+
+            <!-- ─────────────────────────────────
+                 PANNEAU 3 : STATISTIQUES
+            ───────────────────────────────── -->
+            <VBox fx:id="panneauStatistiques" spacing="16" visible="false">
+
+                <Label text="Statistiques de la classe" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                <HBox spacing="20" alignment="TOP_LEFT">
+
+                    <!-- Colonne 1 : résumé général -->
+                    <VBox spacing="8" style="-fx-border-color: #cccccc; -fx-border-radius: 6; -fx-padding: 14;" HBox.hgrow="ALWAYS">
+                        <Label text="Résumé général" style="-fx-font-weight: bold;"/>
+                        <Separator/>
+                        <Label fx:id="labelNbEtudiants"       text="Nombre d'étudiants : -"/>
+                        <Label fx:id="labelMoyenneClasse"     text="Moyenne de la classe : -"/>
+                        <Label fx:id="labelMeilleureMoyenne"  text="Meilleure moyenne : -"/>
+                        <Label fx:id="labelMoinsBonneMoyenne" text="Plus basse moyenne : -"/>
+                        <Label fx:id="labelNbAvecMoyenne"     text="Avec la moyenne (≥10) : -"/>
+                    </VBox>
+
+                    <!-- Colonne 2 : répartition par âge -->
+                    <VBox spacing="8" style="-fx-border-color: #cccccc; -fx-border-radius: 6; -fx-padding: 14;" HBox.hgrow="ALWAYS">
+                        <Label text="Répartition par âge" style="-fx-font-weight: bold;"/>
+                        <Separator/>
+                        <Label fx:id="labelAge1618"  text="16-18 ans : -"/>
+                        <Label fx:id="labelAge1921"  text="19-21 ans : -"/>
+                        <Label fx:id="labelAge2225"  text="22-25 ans : -"/>
+                        <Label fx:id="labelAge26plus" text="26+ ans : -"/>
+                    </VBox>
+
+                    <!-- Colonne 3 : répartition par mention -->
+                    <VBox spacing="8" style="-fx-border-color: #cccccc; -fx-border-radius: 6; -fx-padding: 14;" HBox.hgrow="ALWAYS">
+                        <Label text="Répartition par mention" style="-fx-font-weight: bold;"/>
+                        <Separator/>
+                        <Label fx:id="labelMentionTB" text="Très Bien : -"/>
+                        <Label fx:id="labelMentionB"  text="Bien : -"/>
+                        <Label fx:id="labelMentionAB" text="Assez Bien : -"/>
+                        <Label fx:id="labelMentionP"  text="Passable : -"/>
+                        <Label fx:id="labelMentionI"  text="Insuffisant : -"/>
+                    </VBox>
+
+                </HBox>
+
+                <HBox spacing="8">
+                    <Button text="Actualiser"/>
+                    <Button text="Exporter statistiques HTML"/>
+                </HBox>
+
+            </VBox>
+
+            <!-- ─────────────────────────────────
+                 PANNEAU 4 : IMPORT / EXPORT
+            ───────────────────────────────── -->
+            <VBox fx:id="panneauImportExport" spacing="16" visible="false">
+
+                <Label text="Import / Export des données" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                <HBox spacing="20" alignment="TOP_LEFT">
+
+                    <!-- Export -->
+                    <VBox spacing="10" style="-fx-border-color: #cccccc; -fx-border-radius: 6; -fx-padding: 14;" HBox.hgrow="ALWAYS">
+                        <Label text="Exporter les données" style="-fx-font-weight: bold;"/>
+                        <Separator/>
+                        <Label text="Exporte tous les étudiants dans un fichier :" wrapText="true"/>
+                        <Button text="Exporter en CSV"  maxWidth="Infinity"/>
+                        <Button text="Exporter en JSON" maxWidth="Infinity"/>
+                        <Button text="Exporter en XML"  maxWidth="Infinity"/>
+                    </VBox>
+
+                    <!-- Import -->
+                    <VBox spacing="10" style="-fx-border-color: #cccccc; -fx-border-radius: 6; -fx-padding: 14;" HBox.hgrow="ALWAYS">
+                        <Label text="Importer des données" style="-fx-font-weight: bold;"/>
+                        <Separator/>
+                        <Label text="Importe des étudiants depuis un fichier CSV :" wrapText="true"/>
+                        <Button text="Choisir un fichier CSV..." maxWidth="Infinity"/>
+                        <Label text="" wrapText="true" style="-fx-text-fill: gray;"/>
+                    </VBox>
+
+                </HBox>
+
+            </VBox>
+
+            <!-- ─────────────────────────────────
+                 PANNEAU 5 : SAUVEGARDE AUTO
+            ───────────────────────────────── -->
+            <VBox fx:id="panneauSauvegarde" spacing="16" visible="false">
+
+                <Label text="Sauvegarde automatique" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                <VBox spacing="10" style="-fx-border-color: #cccccc; -fx-border-radius: 6; -fx-padding: 14;" maxWidth="500">
+
+                    <HBox spacing="8">
+                        <Label text="Statut :"/>
+                        <Label fx:id="labelStatutSauvegarde" text="Inactive" style="-fx-text-fill: gray;"/>
+                    </HBox>
+
+                    <HBox spacing="8">
+                        <Label text="Dernière sauvegarde :"/>
+                        <Label fx:id="labelDerniereSauvegarde" text="Jamais"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Intervalle (minutes) :"/>
+                        <Spinner min="1" max="60" initialValue="5" editable="true" prefWidth="80"/>
+                    </HBox>
+
+                    <HBox spacing="8">
+                        <Button text="Démarrer"/>
+                        <Button text="Arrêter"/>
+                        <Button text="Sauvegarder maintenant"/>
+                    </HBox>
+
+                </VBox>
+
+            </VBox>
+
+        </StackPane>
+    </center>
+
+</BorderPane>
