@@ -1,4 +1,8 @@
+<<<<<<< HEAD:Laplateforme_Tracker/laplateforme_tracker/src/main/java/laplateforme_tracker/controller/StudentController.java
 package laplateforme_tracker.controller;
+=======
+package controller;
+>>>>>>> 1154360efec7b1a2ee654e0e460e435546660b15:Laplateforme Tracker/laplateforme_tracker/src/main/java/laplateforme_tracker/controller/StudentController.java
 
 import java.sql.SQLException;
 import java.util.List;
