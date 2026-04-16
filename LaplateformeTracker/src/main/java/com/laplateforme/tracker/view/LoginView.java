@@ -18,33 +18,43 @@ public class LoginView {
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Nom d'utilisateur");
+        usernameField.setMaxWidth(280);
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Mot de passe");
+        passwordField.setMaxWidth(280);
 
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: red;");
 
         Button loginBtn = new Button("Se connecter");
-        loginBtn.setOnAction(e -> {
+        loginBtn.setMaxWidth(280);
+
+        Hyperlink registerLink = new Hyperlink("Pas encore de compte ? S'inscrire");
+        registerLink.setOnAction(e -> new RegisterView().show(stage));
+
+        Runnable doLogin = () -> {
             boolean ok = authController.login(
                     usernameField.getText(),
                     passwordField.getText()
             );
-
             if (ok) {
                 new MainView().show(stage);
             } else {
                 errorLabel.setText("Identifiants incorrects.");
             }
-        });
+        };
 
-        VBox root = new VBox(10, title, usernameField, passwordField, loginBtn, errorLabel);
+        loginBtn.setOnAction(e -> doLogin.run());
+        passwordField.setOnAction(e -> doLogin.run());
+
+        VBox root = new VBox(12, title, usernameField, passwordField,
+                loginBtn, errorLabel, registerLink);
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-padding: 40;");
 
-        stage.setScene(new Scene(root, 350, 300));
-        stage.setTitle("Login");
+        stage.setScene(new Scene(root, 380, 360));
+        stage.setTitle("Connexion - LaPlateformeTracker");
         stage.show();
     }
 }

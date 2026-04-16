@@ -18,8 +18,11 @@ public class DatabaseConnection {
         if (instance == null) {
             try {
                 instance = DriverManager.getConnection(URL, USER, PASSWORD);
+                System.out.println("Connexion PostgreSQL établie.");
             } catch (SQLException e) {
-                System.err.println("Erreur connexion DB : " + e.getMessage());
+                System.err.println("❌ ERREUR : Impossible de se connecter à PostgreSQL");
+                System.err.println("Message : " + e.getMessage());
+                throw new RuntimeException("Connexion DB impossible", e);
             }
         }
         return instance;

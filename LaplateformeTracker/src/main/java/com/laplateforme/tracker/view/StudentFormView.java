@@ -15,49 +15,43 @@ public class StudentFormView {
 
     public void show(Stage stage, Student student) {
 
-        Label title = new Label(student == null ? "Ajouter un étudiant" : "Modifier un étudiant");
+        Label title = new Label(student == null ? "Ajouter un etudiant" : "Modifier un etudiant");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
         TextField firstField = new TextField(student == null ? "" : student.getFirstName());
-        firstField.setPromptText("Prénom");
+        firstField.setPromptText("Prenom");
 
         TextField lastField = new TextField(student == null ? "" : student.getLastName());
         lastField.setPromptText("Nom");
 
         TextField ageField = new TextField(student == null ? "" : String.valueOf(student.getAge()));
-        ageField.setPromptText("Âge");
+        ageField.setPromptText("Age");
 
         TextField gradeField = new TextField(student == null ? "" : String.valueOf(student.getGrade()));
-        gradeField.setPromptText("Note");
+        gradeField.setPromptText("Note (0-20)");
 
-        TextField emailField = new TextField(student == null ? "" :
-                (student.getEmail() == null ? "" : student.getEmail()));
+        TextField emailField = new TextField(
+                student == null ? "" : (student.getEmail() == null ? "" : student.getEmail()));
         emailField.setPromptText("Email (optionnel)");
 
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: red;");
+        errorLabel.setWrapText(true);
 
         Button saveBtn = new Button("Enregistrer");
         saveBtn.setOnAction(e -> {
-
             String error;
             if (student == null) {
                 error = controller.addStudent(
-                        firstField.getText(),
-                        lastField.getText(),
-                        ageField.getText(),
-                        gradeField.getText(),
-                        emailField.getText()
-                );
+                        firstField.getText(), lastField.getText(),
+                        ageField.getText(), gradeField.getText(),
+                        emailField.getText());
             } else {
                 error = controller.updateStudent(
                         student.getId(),
-                        firstField.getText(),
-                        lastField.getText(),
-                        ageField.getText(),
-                        gradeField.getText(),
-                        emailField.getText()
-                );
+                        firstField.getText(), lastField.getText(),
+                        ageField.getText(), gradeField.getText(),
+                        emailField.getText());
             }
 
             if (error != null) {
@@ -73,12 +67,13 @@ public class StudentFormView {
         HBox btnBox = new HBox(10, saveBtn, cancelBtn);
         btnBox.setAlignment(Pos.CENTER);
 
-        VBox root = new VBox(12, title, firstField, lastField, ageField, gradeField, emailField, errorLabel, btnBox);
+        VBox root = new VBox(12, title, firstField, lastField,
+                ageField, gradeField, emailField, errorLabel, btnBox);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER);
 
         stage.setScene(new Scene(root, 400, 450));
-        stage.setTitle("Formulaire étudiant");
+        stage.setTitle("Formulaire etudiant");
         stage.show();
     }
 }

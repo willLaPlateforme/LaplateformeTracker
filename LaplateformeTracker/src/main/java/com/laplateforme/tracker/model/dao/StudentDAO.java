@@ -20,4 +20,8 @@ public interface StudentDAO {
 
     List<Student> findPage(int limit, int offset) throws SQLException;
     int countAll() throws SQLException;
+
+    // Recherche avancée — déplacée ici depuis SearchController
+    List<Student> advancedSearch(Integer minAge, Integer maxAge,
+                                 Double minGrade, Double maxGrade) throws SQLException;
 }
