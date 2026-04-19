@@ -1,9 +1,8 @@
 package com.laplateforme.tracker.model.dao;
 
+import com.laplateforme.tracker.model.Student;
 import java.sql.SQLException;
 import java.util.List;
-
-import com.laplateforme.tracker.model.Student;
 
 public interface StudentDAO {
 
