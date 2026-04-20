@@ -1,0 +1,7 @@
+com\laplateforme\tracker\controller\AuthControllerTest.class
+com\laplateforme\tracker\controller\SearchControllerTest.class
+com\laplateforme\tracker\util\ValidatorTest.class
+com\laplateforme\tracker\model\StudentTest.class
+com\laplateforme\tracker\controller\StudentControllerTest.class
+com\laplateforme\tracker\controller\StatsControllerTest.class
+com\laplateforme\tracker\service\ImportExportServiceTest.class
