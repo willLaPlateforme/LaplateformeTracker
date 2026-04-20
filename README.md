@@ -118,7 +118,7 @@ Application desktop Java de gestion d'etudiants avec interface graphique JavaFX 
 ### 1. Cloner le depot
 
 ```bash
-git clone https://github.com/votre-utilisateur/LaPlateformeTracker.git
+git clone https://github.com/willLaPlateforme/LaPlateformeTracker.git
 cd LaPlateformeTracker
 ```
 
