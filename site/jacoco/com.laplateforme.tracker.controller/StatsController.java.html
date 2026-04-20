@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatsController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.controller</a> &gt; <span class="el_source">StatsController.java</span></div><h1>StatsController.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.controller;
+
+import com.laplateforme.tracker.model.Student;
+import java.util.*;
+
+<span class="fc" id="L6">public class StatsController {</span>
+
+    public double getClassAverage(List&lt;Student&gt; students) {
+<span class="fc" id="L9">        return students.stream().mapToDouble(Student::getGrade).average().orElse(0.0);</span>
+    }
+
+    public double getMaxGrade(List&lt;Student&gt; students) {
+<span class="fc" id="L13">        return students.stream().mapToDouble(Student::getGrade).max().orElse(0.0);</span>
+    }
+
+    public double getMinGrade(List&lt;Student&gt; students) {
+<span class="fc" id="L17">        return students.stream().mapToDouble(Student::getGrade).min().orElse(0.0);</span>
+    }
+
+    public Map&lt;String, Long&gt; getCountByAgeGroup(List&lt;Student&gt; students) {
+<span class="fc" id="L21">        Map&lt;String, Long&gt; r = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        r.put(&quot;&lt; 18 ans&quot;, students.stream().filter(s -&gt; s.getAge() &lt; 18).count());</span>
+<span class="fc bfc" id="L23" title="All 4 branches covered.">        r.put(&quot;18-20 ans&quot;, students.stream().filter(s -&gt; s.getAge() &gt;= 18 &amp;&amp; s.getAge() &lt;= 20).count());</span>
+<span class="fc bfc" id="L24" title="All 4 branches covered.">        r.put(&quot;21-23 ans&quot;, students.stream().filter(s -&gt; s.getAge() &gt;= 21 &amp;&amp; s.getAge() &lt;= 23).count());</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        r.put(&quot;&gt; 23 ans&quot;, students.stream().filter(s -&gt; s.getAge() &gt; 23).count());</span>
+<span class="fc" id="L26">        return r;</span>
+    }
+
+    public Map&lt;String, Long&gt; getCountByMention(List&lt;Student&gt; students) {
+<span class="fc" id="L30">        Map&lt;String, Long&gt; r = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        r.put(&quot;Très bien (&gt;=16)&quot;, students.stream().filter(s -&gt; s.getGrade() &gt;= 16).count());</span>
+<span class="fc bfc" id="L32" title="All 4 branches covered.">        r.put(&quot;Bien (14-15.99)&quot;, students.stream().filter(s -&gt; s.getGrade() &gt;= 14 &amp;&amp; s.getGrade() &lt; 16).count());</span>
+<span class="fc bfc" id="L33" title="All 4 branches covered.">        r.put(&quot;Assez bien (12-13.99)&quot;, students.stream().filter(s -&gt; s.getGrade() &gt;= 12 &amp;&amp; s.getGrade() &lt; 14).count());</span>
+<span class="fc bfc" id="L34" title="All 4 branches covered.">        r.put(&quot;Passable (10-11.99)&quot;, students.stream().filter(s -&gt; s.getGrade() &gt;= 10 &amp;&amp; s.getGrade() &lt; 12).count());</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        r.put(&quot;Échec (&lt;10)&quot;, students.stream().filter(s -&gt; s.getGrade() &lt; 10).count());</span>
+<span class="fc" id="L36">        return r;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.controller</a> &gt; <span class="el_source">StudentController.java</span></div><h1>StudentController.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.controller;
+
+import com.laplateforme.tracker.model.Student;
+import com.laplateforme.tracker.model.dao.StudentDAO;
+import com.laplateforme.tracker.model.dao.StudentDAOImpl;
+import com.laplateforme.tracker.util.Validator;
+
+import java.sql.SQLException;
+import java.util.List;
+
+<span class="fc" id="L11">public class StudentController {</span>
+
+<span class="fc" id="L13">    private final StudentDAO dao = new StudentDAOImpl();</span>
+
+    public String addStudent(String firstName, String lastName,
+                             String ageStr, String gradeStr, String email) {
+<span class="fc" id="L17">        String error = Validator.validateStudent(firstName, lastName, ageStr, gradeStr, email);</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if (error != null) return error;</span>
+
+        try {
+            // Verification doublon : meme prenom + meme nom
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">            if (dao.existsByFullName(firstName.trim(), lastName.trim()))</span>
+<span class="nc" id="L23">                return &quot;Un etudiant &quot; + firstName.trim() + &quot; &quot; + lastName.trim()</span>
+                        + &quot; existe deja. Verifiez la liste.&quot;;
+
+<span class="fc" id="L26">            int age    = Integer.parseInt(ageStr);</span>
+<span class="fc" id="L27">            double grade = Double.parseDouble(gradeStr.replace(&quot;,&quot;, &quot;.&quot;));</span>
+<span class="fc" id="L28">            dao.add(new Student(firstName.trim(), lastName.trim(), age, grade, email));</span>
+<span class="fc" id="L29">            return null;</span>
+
+<span class="fc" id="L31">        } catch (SQLException e) {</span>
+<span class="fc" id="L32">            return &quot;Erreur base de donnees : &quot; + e.getMessage();</span>
+        }
+    }
+
+    public String updateStudent(int id, String firstName, String lastName,
+                                String ageStr, String gradeStr, String email) {
+<span class="fc" id="L38">        String error = Validator.validateStudent(firstName, lastName, ageStr, gradeStr, email);</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (error != null) return error;</span>
+
+        try {
+            // Verification doublon : meme prenom+nom mais pas l'etudiant lui-meme
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">            if (dao.existsByFullNameExcludeId(firstName.trim(), lastName.trim(), id))</span>
+<span class="nc" id="L44">                return &quot;Un autre etudiant &quot; + firstName.trim() + &quot; &quot; + lastName.trim()</span>
+                        + &quot; existe deja.&quot;;
+
+<span class="fc" id="L47">            int age    = Integer.parseInt(ageStr);</span>
+<span class="fc" id="L48">            double grade = Double.parseDouble(gradeStr.replace(&quot;,&quot;, &quot;.&quot;));</span>
+<span class="fc" id="L49">            Student s = new Student(firstName.trim(), lastName.trim(), age, grade, email);</span>
+<span class="fc" id="L50">            s.setId(id);</span>
+<span class="fc" id="L51">            dao.update(s);</span>
+<span class="fc" id="L52">            return null;</span>
+
+<span class="nc" id="L54">        } catch (SQLException e) {</span>
+<span class="nc" id="L55">            return &quot;Erreur base de donnees : &quot; + e.getMessage();</span>
+        }
+    }
+
+    public void deleteStudent(int id) {
+<span class="fc" id="L60">        try { dao.delete(id); }</span>
+<span class="fc" id="L61">        catch (SQLException e) { System.err.println(&quot;Erreur suppression : &quot; + e.getMessage()); }</span>
+<span class="fc" id="L62">    }</span>
+
+    public List&lt;Student&gt; getAllStudents() {
+<span class="fc" id="L65">        try { return dao.findAll(); }</span>
+<span class="fc" id="L66">        catch (SQLException e) { return List.of(); }</span>
+    }
+
+    public Student getStudentById(int id) {
+<span class="nc" id="L70">        try { return dao.findById(id); }</span>
+<span class="nc" id="L71">        catch (SQLException e) { return null; }</span>
+    }
+
+    public List&lt;Student&gt; searchStudents(String keyword) {
+<span class="nc" id="L75">        try { return dao.search(keyword); }</span>
+<span class="nc" id="L76">        catch (SQLException e) { return List.of(); }</span>
+    }
+
+    public List&lt;Student&gt; getSortedStudents(String column, String order) {
+<span class="nc" id="L80">        try { return dao.findAllSorted(column, order); }</span>
+<span class="nc" id="L81">        catch (SQLException e) { return List.of(); }</span>
+    }
+
+    public List&lt;Student&gt; getPage(int page, int pageSize) {
+<span class="fc" id="L85">        try { return dao.findPage(pageSize, (page - 1) * pageSize); }</span>
+<span class="nc" id="L86">        catch (SQLException e) { return List.of(); }</span>
+    }
+
+    public int getTotalCount() {
+<span class="fc" id="L90">        try { return dao.countAll(); }</span>
+<span class="fc" id="L91">        catch (SQLException e) { return 0; }</span>
+    }
+
+    public int getSearchCount(String keyword) {
+<span class="nc" id="L95">        try { return dao.countSearch(keyword); }</span>
+<span class="nc" id="L96">        catch (SQLException e) { return 0; }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

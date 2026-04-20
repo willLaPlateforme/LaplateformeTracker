@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegisterView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.view</a> &gt; <span class="el_source">RegisterView.java</span></div><h1>RegisterView.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.view;
+
+import com.laplateforme.tracker.controller.AuthController;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+<span class="nc" id="L11">public class RegisterView {</span>
+
+    public void show(Stage stage) {
+
+<span class="nc" id="L15">        AuthController auth = new AuthController();</span>
+
+<span class="nc" id="L17">        Label title = new Label(&quot;Creer un compte&quot;);</span>
+<span class="nc" id="L18">        title.setStyle(&quot;-fx-font-size: 20px; -fx-font-weight: bold;&quot;);</span>
+
+<span class="nc" id="L20">        TextField userField = new TextField();</span>
+<span class="nc" id="L21">        userField.setPromptText(&quot;Nom d'utilisateur&quot;);</span>
+<span class="nc" id="L22">        userField.setMaxWidth(300);</span>
+
+<span class="nc" id="L24">        PasswordField passField = new PasswordField();</span>
+<span class="nc" id="L25">        passField.setPromptText(&quot;Mot de passe&quot;);</span>
+<span class="nc" id="L26">        passField.setMaxWidth(300);</span>
+
+<span class="nc" id="L28">        PasswordField confirmField = new PasswordField();</span>
+<span class="nc" id="L29">        confirmField.setPromptText(&quot;Confirmer le mot de passe&quot;);</span>
+<span class="nc" id="L30">        confirmField.setMaxWidth(300);</span>
+
+        // Indicateur des regles du mot de passe
+<span class="nc" id="L33">        Label rulesLabel = new Label(</span>
+            &quot;Regles : 8 caracteres min • 1 MAJUSCULE • 1 minuscule • 1 chiffre&quot;);
+<span class="nc" id="L35">        rulesLabel.setStyle(&quot;-fx-font-size: 11px; -fx-text-fill: #666; -fx-font-style: italic;&quot;);</span>
+<span class="nc" id="L36">        rulesLabel.setWrapText(true);</span>
+<span class="nc" id="L37">        rulesLabel.setMaxWidth(300);</span>
+
+<span class="nc" id="L39">        Label errorLabel = new Label();</span>
+<span class="nc" id="L40">        errorLabel.setStyle(&quot;-fx-text-fill: red; -fx-font-size: 12;&quot;);</span>
+<span class="nc" id="L41">        errorLabel.setWrapText(true);</span>
+<span class="nc" id="L42">        errorLabel.setMaxWidth(300);</span>
+
+<span class="nc" id="L44">        Label successLabel = new Label();</span>
+<span class="nc" id="L45">        successLabel.setStyle(&quot;-fx-text-fill: green; -fx-font-size: 12;&quot;);</span>
+
+<span class="nc" id="L47">        Button registerBtn = new Button(&quot;Creer le compte&quot;);</span>
+<span class="nc" id="L48">        registerBtn.setMaxWidth(300);</span>
+
+<span class="nc" id="L50">        Hyperlink loginLink = new Hyperlink(&quot;Deja un compte ? Se connecter&quot;);</span>
+<span class="nc" id="L51">        loginLink.setOnAction(e -&gt; new LoginView().show(stage));</span>
+
+<span class="nc" id="L53">        registerBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L54">            errorLabel.setText(&quot;&quot;);</span>
+<span class="nc" id="L55">            successLabel.setText(&quot;&quot;);</span>
+
+<span class="nc" id="L57">            String username = userField.getText().trim();</span>
+<span class="nc" id="L58">            String password = passField.getText();</span>
+<span class="nc" id="L59">            String confirm  = confirmField.getText();</span>
+
+            // Verification confirmation mot de passe (dans la View)
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (!password.equals(confirm)) {</span>
+<span class="nc" id="L63">                errorLabel.setText(&quot;Les mots de passe ne correspondent pas.&quot;);</span>
+<span class="nc" id="L64">                return;</span>
+            }
+
+            // Toute la validation (username + regles mdp + doublon) dans le controller
+<span class="nc" id="L68">            String error = auth.register(username, password);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            if (error == null) {</span>
+<span class="nc" id="L70">                successLabel.setText(&quot;Compte cree ! Vous pouvez vous connecter.&quot;);</span>
+<span class="nc" id="L71">                userField.clear(); passField.clear(); confirmField.clear();</span>
+            } else {
+<span class="nc" id="L73">                errorLabel.setText(error);</span>
+            }
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        VBox root = new VBox(10,</span>
+                title, new Separator(),
+                new Label(&quot;Nom d'utilisateur&quot;), userField,
+                new Label(&quot;Mot de passe&quot;),      passField,
+                rulesLabel,
+                new Label(&quot;Confirmer&quot;),          confirmField,
+                errorLabel, successLabel,
+                registerBtn, loginLink);
+<span class="nc" id="L85">        root.setAlignment(Pos.CENTER_LEFT);</span>
+<span class="nc" id="L86">        root.setPadding(new Insets(40));</span>
+
+<span class="nc" id="L88">        stage.setScene(new Scene(root, 420, 520));</span>
+<span class="nc" id="L89">        stage.setTitle(&quot;Inscription&quot;);</span>
+<span class="nc" id="L90">        stage.show();</span>
+<span class="nc" id="L91">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

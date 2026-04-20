@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MainView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.view</a> &gt; <span class="el_source">MainView.java</span></div><h1>MainView.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.view;
+
+import com.laplateforme.tracker.service.BackupService;
+import com.laplateforme.tracker.util.DatabaseConnection;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+<span class="nc" id="L13">public class MainView {</span>
+
+<span class="nc" id="L15">    private final BackupService backupService = new BackupService();</span>
+
+    public void show(Stage stage) {
+
+<span class="nc" id="L19">        Label title = new Label(&quot;Menu principal&quot;);</span>
+<span class="nc" id="L20">        title.setStyle(&quot;-fx-font-size: 20px; -fx-font-weight: bold;&quot;);</span>
+
+        // ── Boutons principaux ──────────────────────────────────────────────
+<span class="nc" id="L23">        Button listBtn = new Button(&quot;Liste des etudiants&quot;);</span>
+<span class="nc" id="L24">        listBtn.setMaxWidth(240);</span>
+<span class="nc" id="L25">        listBtn.setOnAction(e -&gt; new StudentListView().show(stage));</span>
+
+<span class="nc" id="L27">        Button statsBtn = new Button(&quot;Statistiques&quot;);</span>
+<span class="nc" id="L28">        statsBtn.setMaxWidth(240);</span>
+<span class="nc" id="L29">        statsBtn.setOnAction(e -&gt; new StatsView().show(stage));</span>
+
+        // ── Sauvegarde manuelle ─────────────────────────────────────────────
+<span class="nc" id="L32">        Button backupBtn = new Button(&quot;Sauvegarder les donnees&quot;);</span>
+<span class="nc" id="L33">        backupBtn.setMaxWidth(240);</span>
+<span class="nc" id="L34">        backupBtn.setStyle(&quot;-fx-background-color: #2563eb; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L35">        backupBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L36">            String path = backupService.backupNow();</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">            if (path != null) {</span>
+<span class="nc" id="L38">                showInfo(&quot;Sauvegarde reussie !\nFichier : &quot; + path);</span>
+            } else {
+<span class="nc" id="L40">                showError(&quot;Echec de la sauvegarde. Verifiez la connexion BDD.&quot;);</span>
+            }
+<span class="nc" id="L42">        });</span>
+
+        // ── Deconnexion (retour login, BDD reste ouverte) ───────────────────
+<span class="nc" id="L45">        Button logoutBtn = new Button(&quot;Deconnexion&quot;);</span>
+<span class="nc" id="L46">        logoutBtn.setMaxWidth(240);</span>
+<span class="nc" id="L47">        logoutBtn.setOnAction(e -&gt; new LoginView().show(stage));</span>
+
+        // ── Quitter et fermer BDD ───────────────────────────────────────────
+<span class="nc" id="L50">        Button quitBtn = new Button(&quot;Quitter (fermer BDD)&quot;);</span>
+<span class="nc" id="L51">        quitBtn.setMaxWidth(240);</span>
+<span class="nc" id="L52">        quitBtn.setStyle(&quot;-fx-background-color: #dc2626; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L53">        quitBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L54">            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,</span>
+                    &quot;Voulez-vous sauvegarder avant de quitter ?&quot;,
+                    ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+<span class="nc" id="L57">            confirm.setTitle(&quot;Quitter l'application&quot;);</span>
+<span class="nc" id="L58">            confirm.setHeaderText(&quot;Fermeture de LaPlateformeTracker&quot;);</span>
+<span class="nc" id="L59">            confirm.showAndWait().ifPresent(btn -&gt; {</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                if (btn == ButtonType.CANCEL) return;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                if (btn == ButtonType.YES) {</span>
+<span class="nc" id="L62">                    String path = backupService.backupNow();</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                    if (path != null) showInfo(&quot;Sauvegarde OK : &quot; + path);</span>
+                }
+                // Fermer la connexion BDD proprement
+<span class="nc" id="L66">                DatabaseConnection.closeConnection();</span>
+<span class="nc" id="L67">                Platform.exit();</span>
+<span class="nc" id="L68">            });</span>
+<span class="nc" id="L69">        });</span>
+
+        // ── Indicateur connexion BDD ────────────────────────────────────────
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        Label dbStatus = new Label(DatabaseConnection.isConnected()</span>
+<span class="nc" id="L73">                ? &quot;BDD connectee&quot; : &quot;BDD deconnectee&quot;);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        dbStatus.setStyle(DatabaseConnection.isConnected()</span>
+<span class="nc" id="L75">                ? &quot;-fx-text-fill: green; -fx-font-size: 11px;&quot;</span>
+<span class="nc" id="L76">                : &quot;-fx-text-fill: red; -fx-font-size: 11px;&quot;);</span>
+
+<span class="nc" id="L78">        Separator sep = new Separator();</span>
+
+<span class="nc" id="L80">        VBox root = new VBox(12, title,</span>
+                listBtn, statsBtn,
+                sep,
+                backupBtn,
+                logoutBtn, quitBtn,
+                dbStatus);
+<span class="nc" id="L86">        root.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L87">        root.setPadding(new Insets(40));</span>
+
+<span class="nc" id="L89">        stage.setScene(new Scene(root, 400, 400));</span>
+<span class="nc" id="L90">        stage.setTitle(&quot;Menu principal&quot;);</span>
+        // Gerer la fermeture de la fenetre (croix rouge)
+<span class="nc" id="L92">        stage.setOnCloseRequest(e -&gt; {</span>
+<span class="nc" id="L93">            e.consume();</span>
+<span class="nc" id="L94">            quitBtn.fire();</span>
+<span class="nc" id="L95">        });</span>
+<span class="nc" id="L96">        stage.show();</span>
+<span class="nc" id="L97">    }</span>
+
+    private void showInfo(String msg) {
+<span class="nc" id="L100">        new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait();</span>
+<span class="nc" id="L101">    }</span>
+    private void showError(String msg) {
+<span class="nc" id="L103">        new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait();</span>
+<span class="nc" id="L104">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

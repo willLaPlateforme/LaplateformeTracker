@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImportExportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.service</a> &gt; <span class="el_source">ImportExportService.java</span></div><h1>ImportExportService.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.service;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.laplateforme.tracker.model.Student;
+
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="fc" id="L12">public class ImportExportService {</span>
+
+    // EXPORT CSV
+    public void exportCSV(List&lt;Student&gt; students, String filePath) throws IOException {
+<span class="fc" id="L16">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {</span>
+<span class="fc" id="L17">            writer.write(&quot;id;first_name;last_name;age;grade;email\n&quot;);</span>
+
+<span class="fc bfc" id="L19" title="All 2 branches covered.">            for (Student s : students) {</span>
+<span class="fc" id="L20">                writer.write(</span>
+<span class="fc" id="L21">                        s.getId() + &quot;;&quot; +</span>
+<span class="fc" id="L22">                        s.getFirstName() + &quot;;&quot; +</span>
+<span class="fc" id="L23">                        s.getLastName() + &quot;;&quot; +</span>
+<span class="fc" id="L24">                        s.getAge() + &quot;;&quot; +</span>
+<span class="fc" id="L25">                        s.getGrade() + &quot;;&quot; +</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">                        (s.getEmail() == null ? &quot;&quot; : s.getEmail()) +</span>
+                        &quot;\n&quot;
+                );
+<span class="fc" id="L29">            }</span>
+        }
+<span class="fc" id="L31">    }</span>
+
+    // IMPORT CSV
+    public List&lt;Student&gt; importCSV(String filePath) throws IOException {
+<span class="fc" id="L35">        List&lt;Student&gt; list = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L37">        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {</span>
+            String line;
+<span class="fc" id="L39">            reader.readLine(); // skip header</span>
+
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L42">                String[] p = line.split(&quot;;&quot;);</span>
+
+<span class="fc" id="L44">                String first = p[1];</span>
+<span class="fc" id="L45">                String last = p[2];</span>
+<span class="fc" id="L46">                int age = Integer.parseInt(p[3]);</span>
+<span class="fc" id="L47">                double grade = Double.parseDouble(p[4]);</span>
+<span class="pc bpc" id="L48" title="1 of 4 branches missed.">                String email = p.length &gt; 5 &amp;&amp; !p[5].isBlank() ? p[5] : null;</span>
+
+<span class="fc" id="L50">                Student s = new Student(first, last, age, grade, email);</span>
+<span class="fc" id="L51">                list.add(s);</span>
+<span class="fc" id="L52">            }</span>
+        }
+<span class="fc" id="L54">        return list;</span>
+    }
+
+    // EXPORT JSON
+    public void exportJSON(List&lt;Student&gt; students, String filePath) throws IOException {
+<span class="fc" id="L59">        Gson gson = new Gson();</span>
+<span class="fc" id="L60">        String json = gson.toJson(students);</span>
+
+<span class="fc" id="L62">        try (FileWriter writer = new FileWriter(filePath)) {</span>
+<span class="fc" id="L63">            writer.write(json);</span>
+        }
+<span class="fc" id="L65">    }</span>
+
+    // IMPORT JSON
+    public List&lt;Student&gt; importJSON(String filePath) throws IOException {
+<span class="fc" id="L69">        Gson gson = new Gson();</span>
+<span class="fc" id="L70">        Type listType = new TypeToken&lt;List&lt;Student&gt;&gt;() {}.getType();</span>
+
+<span class="fc" id="L72">        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {</span>
+<span class="fc" id="L73">            return gson.fromJson(reader, listType);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

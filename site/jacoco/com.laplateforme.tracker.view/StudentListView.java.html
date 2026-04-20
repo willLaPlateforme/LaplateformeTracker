@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentListView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.view</a> &gt; <span class="el_source">StudentListView.java</span></div><h1>StudentListView.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.view;
+
+import com.laplateforme.tracker.controller.ImportExportController;
+import com.laplateforme.tracker.controller.SearchController;
+import com.laplateforme.tracker.controller.StudentController;
+import com.laplateforme.tracker.model.Student;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.util.List;
+
+/**
+ * Liste des etudiants.
+ *
+ * NOUVEAUTES :
+ * - Recherche avancee : ID, prenom, nom, email, age min/max, note min/max
+ * - Panneau recherche avancee affichable/masquable
+ * - Gestion des doublons visible via message d'erreur dans le formulaire
+ */
+<span class="nc" id="L30">public class StudentListView {</span>
+
+<span class="nc" id="L32">    private final StudentController      ctrl      = new StudentController();</span>
+<span class="nc" id="L33">    private final ImportExportController ioCtrl    = new ImportExportController();</span>
+<span class="nc" id="L34">    private final SearchController       searchCtrl = new SearchController();</span>
+
+    // Pagination
+<span class="nc" id="L37">    private int    currentPage   = 1;</span>
+<span class="nc" id="L38">    private int    pageSize      = 10;</span>
+<span class="nc" id="L39">    private String searchKeyword = &quot;&quot;;</span>
+
+    // Mode recherche avancee active
+<span class="nc" id="L42">    private boolean advancedMode = false;</span>
+
+    private TableView&lt;Student&gt; table;
+    private Label              pageLabel;
+
+    // Champs de recherche avancee
+    private TextField advIdField, advFirstField, advLastField, advEmailField;
+    private TextField advMinAgeField, advMaxAgeField, advMinGradeField, advMaxGradeField;
+    private VBox      advancedPanel;
+
+    public void show(Stage stage) {
+
+        // ── Colonnes du tableau ───────────────────────────────────────────────
+<span class="nc" id="L55">        table = new TableView&lt;&gt;();</span>
+<span class="nc" id="L56">        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);</span>
+
+<span class="nc" id="L58">        TableColumn&lt;Student, Integer&gt; colId = new TableColumn&lt;&gt;(&quot;ID&quot;);</span>
+<span class="nc" id="L59">        colId.setCellValueFactory(c -&gt; new SimpleIntegerProperty(c.getValue().getId()).asObject());</span>
+<span class="nc" id="L60">        colId.setMaxWidth(50);</span>
+
+<span class="nc" id="L62">        TableColumn&lt;Student, String&gt;  colFirst = new TableColumn&lt;&gt;(&quot;Prenom&quot;);</span>
+<span class="nc" id="L63">        colFirst.setCellValueFactory(c -&gt; new SimpleStringProperty(c.getValue().getFirstName()));</span>
+
+<span class="nc" id="L65">        TableColumn&lt;Student, String&gt;  colLast  = new TableColumn&lt;&gt;(&quot;Nom&quot;);</span>
+<span class="nc" id="L66">        colLast.setCellValueFactory(c -&gt; new SimpleStringProperty(c.getValue().getLastName()));</span>
+
+<span class="nc" id="L68">        TableColumn&lt;Student, Integer&gt; colAge   = new TableColumn&lt;&gt;(&quot;Age&quot;);</span>
+<span class="nc" id="L69">        colAge.setCellValueFactory(c -&gt; new SimpleIntegerProperty(c.getValue().getAge()).asObject());</span>
+
+<span class="nc" id="L71">        TableColumn&lt;Student, Double&gt;  colGrade = new TableColumn&lt;&gt;(&quot;Note&quot;);</span>
+<span class="nc" id="L72">        colGrade.setCellValueFactory(c -&gt; new SimpleDoubleProperty(c.getValue().getGrade()).asObject());</span>
+
+<span class="nc" id="L74">        TableColumn&lt;Student, String&gt;  colEmail = new TableColumn&lt;&gt;(&quot;Email&quot;);</span>
+<span class="nc" id="L75">        colEmail.setCellValueFactory(c -&gt; new SimpleStringProperty(</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                c.getValue().getEmail() == null ? &quot;-&quot; : c.getValue().getEmail()));</span>
+
+<span class="nc" id="L78">        table.getColumns().addAll(colId, colFirst, colLast, colAge, colGrade, colEmail);</span>
+<span class="nc" id="L79">        VBox.setVgrow(table, Priority.ALWAYS);</span>
+
+        // ── Recherche simple ─────────────────────────────────────────────────
+<span class="nc" id="L82">        TextField searchField = new TextField();</span>
+<span class="nc" id="L83">        searchField.setPromptText(&quot;Rechercher par nom ou prenom...&quot;);</span>
+<span class="nc" id="L84">        searchField.setPrefWidth(200);</span>
+<span class="nc" id="L85">        searchField.textProperty().addListener((obs, old, val) -&gt; {</span>
+<span class="nc" id="L86">            searchKeyword = val.trim();</span>
+<span class="nc" id="L87">            advancedMode  = false;</span>
+<span class="nc" id="L88">            currentPage   = 1;</span>
+<span class="nc" id="L89">            refresh();</span>
+<span class="nc" id="L90">        });</span>
+
+<span class="nc" id="L92">        Button clearBtn = new Button(&quot;X&quot;);</span>
+<span class="nc" id="L93">        clearBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L94">            searchField.clear();</span>
+<span class="nc" id="L95">            searchKeyword = &quot;&quot;;</span>
+<span class="nc" id="L96">            advancedMode  = false;</span>
+<span class="nc" id="L97">            currentPage   = 1;</span>
+<span class="nc" id="L98">            resetAdvancedFields();</span>
+<span class="nc" id="L99">            refresh();</span>
+<span class="nc" id="L100">        });</span>
+
+        // ── Bouton bascule recherche avancee ─────────────────────────────────
+<span class="nc" id="L103">        Button advBtn = new Button(&quot;Recherche avancee&quot;);</span>
+<span class="nc" id="L104">        advBtn.setStyle(&quot;-fx-background-color: #7c3aed; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L105">        advBtn.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">            boolean visible = !advancedPanel.isVisible();</span>
+<span class="nc" id="L107">            advancedPanel.setVisible(visible);</span>
+<span class="nc" id="L108">            advancedPanel.setManaged(visible);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            advBtn.setStyle(visible</span>
+<span class="nc" id="L110">                    ? &quot;-fx-background-color: #4c1d95; -fx-text-fill: white;&quot;</span>
+<span class="nc" id="L111">                    : &quot;-fx-background-color: #7c3aed; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L112">        });</span>
+
+        // ── Panneau recherche avancee ─────────────────────────────────────────
+<span class="nc" id="L115">        advIdField      = field(&quot;ID exact&quot;, 70);</span>
+<span class="nc" id="L116">        advFirstField   = field(&quot;Prenom&quot;, 120);</span>
+<span class="nc" id="L117">        advLastField    = field(&quot;Nom&quot;,    120);</span>
+<span class="nc" id="L118">        advEmailField   = field(&quot;Email&quot;,  150);</span>
+<span class="nc" id="L119">        advMinAgeField  = field(&quot;Age min&quot;, 70);</span>
+<span class="nc" id="L120">        advMaxAgeField  = field(&quot;Age max&quot;, 70);</span>
+<span class="nc" id="L121">        advMinGradeField= field(&quot;Note min&quot;, 70);</span>
+<span class="nc" id="L122">        advMaxGradeField= field(&quot;Note max&quot;, 70);</span>
+
+<span class="nc" id="L124">        Button runAdvBtn   = new Button(&quot;Rechercher&quot;);</span>
+<span class="nc" id="L125">        Button clearAdvBtn = new Button(&quot;Reinitialiser&quot;);</span>
+<span class="nc" id="L126">        runAdvBtn.setStyle(&quot;-fx-background-color: #2563eb; -fx-text-fill: white;&quot;);</span>
+
+<span class="nc" id="L128">        runAdvBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L129">            advancedMode = true;</span>
+<span class="nc" id="L130">            currentPage  = 1;</span>
+<span class="nc" id="L131">            searchField.clear();</span>
+<span class="nc" id="L132">            searchKeyword = &quot;&quot;;</span>
+<span class="nc" id="L133">            refresh();</span>
+<span class="nc" id="L134">        });</span>
+<span class="nc" id="L135">        clearAdvBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L136">            resetAdvancedFields();</span>
+<span class="nc" id="L137">            advancedMode  = false;</span>
+<span class="nc" id="L138">            currentPage   = 1;</span>
+<span class="nc" id="L139">            refresh();</span>
+<span class="nc" id="L140">        });</span>
+
+<span class="nc" id="L142">        HBox advRow1 = new HBox(8,</span>
+<span class="nc" id="L143">                lbl(&quot;ID :&quot;), advIdField,</span>
+<span class="nc" id="L144">                lbl(&quot;Prenom :&quot;), advFirstField,</span>
+<span class="nc" id="L145">                lbl(&quot;Nom :&quot;), advLastField,</span>
+<span class="nc" id="L146">                lbl(&quot;Email :&quot;), advEmailField);</span>
+<span class="nc" id="L147">        advRow1.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L149">        HBox advRow2 = new HBox(8,</span>
+<span class="nc" id="L150">                lbl(&quot;Age min :&quot;), advMinAgeField,</span>
+<span class="nc" id="L151">                lbl(&quot;Age max :&quot;), advMaxAgeField,</span>
+<span class="nc" id="L152">                lbl(&quot;Note min :&quot;), advMinGradeField,</span>
+<span class="nc" id="L153">                lbl(&quot;Note max :&quot;), advMaxGradeField,</span>
+                runAdvBtn, clearAdvBtn);
+<span class="nc" id="L155">        advRow2.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L157">        advancedPanel = new VBox(6, advRow1, advRow2);</span>
+<span class="nc" id="L158">        advancedPanel.setPadding(new Insets(8, 0, 4, 0));</span>
+<span class="nc" id="L159">        advancedPanel.setStyle(&quot;-fx-background-color: #f5f3ff; -fx-padding: 8; -fx-border-radius: 6;&quot;);</span>
+<span class="nc" id="L160">        advancedPanel.setVisible(false);</span>
+<span class="nc" id="L161">        advancedPanel.setManaged(false);</span>
+
+        // ── Tri ───────────────────────────────────────────────────────────────
+<span class="nc" id="L164">        ComboBox&lt;String&gt; sortBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L165">        sortBox.getItems().addAll(&quot;Nom&quot;, &quot;Prenom&quot;, &quot;Age&quot;, &quot;Note&quot;, &quot;ID&quot;);</span>
+<span class="nc" id="L166">        sortBox.setPromptText(&quot;Trier par...&quot;);</span>
+
+<span class="nc" id="L168">        Button sortBtn    = new Button(&quot;Tri ASC&quot;);</span>
+<span class="nc" id="L169">        final boolean[] asc = {true};</span>
+<span class="nc" id="L170">        sortBtn.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">            if (sortBox.getValue() == null) return;</span>
+<span class="nc bnc" id="L172" title="All 18 branches missed.">            String col = switch (sortBox.getValue()) {</span>
+<span class="nc" id="L173">                case &quot;Prenom&quot; -&gt; &quot;first_name&quot;;</span>
+<span class="nc" id="L174">                case &quot;Age&quot;    -&gt; &quot;age&quot;;</span>
+<span class="nc" id="L175">                case &quot;Note&quot;   -&gt; &quot;grade&quot;;</span>
+<span class="nc" id="L176">                case &quot;ID&quot;     -&gt; &quot;id&quot;;</span>
+<span class="nc" id="L177">                default       -&gt; &quot;last_name&quot;;</span>
+            };
+<span class="nc bnc" id="L179" title="All 2 branches missed.">            asc[0] = !asc[0];</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">            sortBtn.setText(asc[0] ? &quot;Tri ASC&quot; : &quot;Tri DESC&quot;);</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            List&lt;Student&gt; sorted = ctrl.getSortedStudents(col, asc[0] ? &quot;ASC&quot; : &quot;DESC&quot;);</span>
+<span class="nc" id="L182">            table.setItems(FXCollections.observableArrayList(sorted));</span>
+<span class="nc" id="L183">            pageLabel.setText(sorted.size() + &quot; etudiant(s)&quot;);</span>
+<span class="nc" id="L184">        });</span>
+
+        // ── CRUD ──────────────────────────────────────────────────────────────
+<span class="nc" id="L187">        Button addBtn    = new Button(&quot;+ Ajouter&quot;);</span>
+<span class="nc" id="L188">        Button editBtn   = new Button(&quot;Modifier&quot;);</span>
+<span class="nc" id="L189">        Button deleteBtn = new Button(&quot;Supprimer&quot;);</span>
+<span class="nc" id="L190">        Button backBtn   = new Button(&quot;&lt; Retour&quot;);</span>
+
+<span class="nc" id="L192">        addBtn.setOnAction(e -&gt; new StudentFormView().show(stage, null));</span>
+
+<span class="nc" id="L194">        editBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L195">            Student s = table.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">            if (s != null) new StudentFormView().show(stage, s);</span>
+<span class="nc" id="L197">            else alert(stage, &quot;Selectionnez un etudiant.&quot;);</span>
+<span class="nc" id="L198">        });</span>
+
+<span class="nc" id="L200">        deleteBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L201">            Student s = table.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            if (s == null) { alert(stage, &quot;Selectionnez un etudiant.&quot;); return; }</span>
+<span class="nc" id="L203">            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,</span>
+<span class="nc" id="L204">                    &quot;Supprimer &quot; + s.getFirstName() + &quot; &quot; + s.getLastName() + &quot; ?&quot;,</span>
+                    ButtonType.YES, ButtonType.NO);
+<span class="nc" id="L206">            confirm.showAndWait().ifPresent(b -&gt; {</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">                if (b == ButtonType.YES) { ctrl.deleteStudent(s.getId()); refresh(); }</span>
+<span class="nc" id="L208">            });</span>
+<span class="nc" id="L209">        });</span>
+
+<span class="nc" id="L211">        backBtn.setOnAction(e -&gt; new MainView().show(stage));</span>
+
+        // ── Import / Export ───────────────────────────────────────────────────
+<span class="nc" id="L214">        Button exportCsvBtn  = new Button(&quot;Export CSV&quot;);</span>
+<span class="nc" id="L215">        Button exportJsonBtn = new Button(&quot;Export JSON&quot;);</span>
+<span class="nc" id="L216">        Button importCsvBtn  = new Button(&quot;Import CSV&quot;);</span>
+
+<span class="nc" id="L218">        exportCsvBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L219">            FileChooser fc = chooser(&quot;CSV&quot;, &quot;*.csv&quot;);</span>
+<span class="nc" id="L220">            File f = fc.showSaveDialog(stage);</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if (f != null) {</span>
+<span class="nc" id="L222">                String err = ioCtrl.exportCSV(ctrl.getAllStudents(), f.getAbsolutePath());</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">                if (err != null) alert(stage, err);</span>
+<span class="nc" id="L224">                else info(stage, &quot;Export reussi : &quot; + f.getName());</span>
+            }
+<span class="nc" id="L226">        });</span>
+
+<span class="nc" id="L228">        exportJsonBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L229">            FileChooser fc = chooser(&quot;JSON&quot;, &quot;*.json&quot;);</span>
+<span class="nc" id="L230">            File f = fc.showSaveDialog(stage);</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            if (f != null) {</span>
+<span class="nc" id="L232">                String err = ioCtrl.exportJSON(ctrl.getAllStudents(), f.getAbsolutePath());</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">                if (err != null) alert(stage, err);</span>
+<span class="nc" id="L234">                else info(stage, &quot;Export reussi : &quot; + f.getName());</span>
+            }
+<span class="nc" id="L236">        });</span>
+
+<span class="nc" id="L238">        importCsvBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L239">            FileChooser fc = chooser(&quot;CSV&quot;, &quot;*.csv&quot;);</span>
+<span class="nc" id="L240">            File f = fc.showOpenDialog(stage);</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">            if (f != null) {</span>
+<span class="nc" id="L242">                List&lt;Student&gt; imported = ioCtrl.importCSV(f.getAbsolutePath());</span>
+<span class="nc" id="L243">                int ok = 0, skip = 0;</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">                for (Student s : imported) {</span>
+<span class="nc" id="L245">                    String err = ctrl.addStudent(s.getFirstName(), s.getLastName(),</span>
+<span class="nc" id="L246">                            String.valueOf(s.getAge()), String.valueOf(s.getGrade()),</span>
+<span class="nc" id="L247">                            s.getEmail());</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">                    if (err == null) ok++; else skip++;</span>
+<span class="nc" id="L249">                }</span>
+<span class="nc" id="L250">                info(stage, ok + &quot; etudiant(s) importes.&quot; +</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                        (skip &gt; 0 ? &quot;\n&quot; + skip + &quot; doublon(s) ignore(s).&quot; : &quot;&quot;));</span>
+<span class="nc" id="L252">                refresh();</span>
+            }
+<span class="nc" id="L254">        });</span>
+
+        // ── Pagination ────────────────────────────────────────────────────────
+<span class="nc" id="L257">        Button prevBtn = new Button(&quot;&lt; Precedent&quot;);</span>
+<span class="nc" id="L258">        Button nextBtn = new Button(&quot;Suivant &gt;&quot;);</span>
+<span class="nc" id="L259">        pageLabel      = new Label();</span>
+
+<span class="nc" id="L261">        ComboBox&lt;Integer&gt; pageSizeBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L262">        pageSizeBox.getItems().addAll(5, 10, 20, 50);</span>
+<span class="nc" id="L263">        pageSizeBox.setValue(pageSize);</span>
+<span class="nc" id="L264">        pageSizeBox.setOnAction(e -&gt; {</span>
+<span class="nc" id="L265">            pageSize = pageSizeBox.getValue(); currentPage = 1; refresh();</span>
+<span class="nc" id="L266">        });</span>
+
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        prevBtn.setOnAction(e -&gt; { if (currentPage &gt; 1) { currentPage--; refresh(); } });</span>
+<span class="nc" id="L269">        nextBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L270">            int total   = totalCount();</span>
+<span class="nc" id="L271">            int maxPage = Math.max(1, (int) Math.ceil((double) total / pageSize));</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">            if (currentPage &lt; maxPage) { currentPage++; refresh(); }</span>
+<span class="nc" id="L273">        });</span>
+
+        // ── Assemblage ────────────────────────────────────────────────────────
+<span class="nc" id="L276">        HBox searchBar = new HBox(8, searchField, clearBtn, advBtn, sortBox, sortBtn);</span>
+<span class="nc" id="L277">        searchBar.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L279">        HBox crudBar = new HBox(8, addBtn, editBtn, deleteBtn, backBtn,</span>
+                new Separator(), exportCsvBtn, exportJsonBtn, importCsvBtn);
+<span class="nc" id="L281">        crudBar.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L283">        HBox pagBar = new HBox(10, prevBtn, pageLabel, nextBtn,</span>
+                new Label(&quot;  Par page :&quot;), pageSizeBox);
+<span class="nc" id="L285">        pagBar.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L287">        VBox root = new VBox(8, searchBar, advancedPanel, crudBar, table, pagBar);</span>
+<span class="nc" id="L288">        root.setPadding(new Insets(16));</span>
+<span class="nc" id="L289">        VBox.setVgrow(table, Priority.ALWAYS);</span>
+
+<span class="nc" id="L291">        stage.setScene(new Scene(root, 900, 580));</span>
+<span class="nc" id="L292">        stage.setTitle(&quot;Liste des etudiants&quot;);</span>
+<span class="nc" id="L293">        stage.show();</span>
+
+<span class="nc" id="L295">        refresh();</span>
+<span class="nc" id="L296">    }</span>
+
+    // ── Logique de rafraichissement ───────────────────────────────────────────
+
+    private void refresh() {
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (advancedMode) {</span>
+<span class="nc" id="L302">            refreshAdvanced();</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        } else if (!searchKeyword.isBlank()) {</span>
+<span class="nc" id="L304">            refreshSimple();</span>
+        } else {
+<span class="nc" id="L306">            refreshAll();</span>
+        }
+<span class="nc" id="L308">    }</span>
+
+    private void refreshAll() {
+<span class="nc" id="L311">        int total   = ctrl.getTotalCount();</span>
+<span class="nc" id="L312">        int maxPage = Math.max(1, (int) Math.ceil((double) total / pageSize));</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">        if (currentPage &gt; maxPage) currentPage = maxPage;</span>
+<span class="nc" id="L314">        table.setItems(FXCollections.observableArrayList(ctrl.getPage(currentPage, pageSize)));</span>
+<span class="nc" id="L315">        pageLabel.setText(&quot;Page &quot; + currentPage + &quot;/&quot; + maxPage + &quot; (&quot; + total + &quot; etudiants)&quot;);</span>
+<span class="nc" id="L316">    }</span>
+
+    private void refreshSimple() {
+<span class="nc" id="L319">        List&lt;Student&gt; all = ctrl.searchStudents(searchKeyword);</span>
+<span class="nc" id="L320">        paginate(all);</span>
+<span class="nc" id="L321">    }</span>
+
+    private void refreshAdvanced() {
+<span class="nc" id="L324">        Integer id       = parseId(advIdField.getText());</span>
+<span class="nc" id="L325">        String  fn       = blank(advFirstField.getText());</span>
+<span class="nc" id="L326">        String  ln       = blank(advLastField.getText());</span>
+<span class="nc" id="L327">        String  em       = blank(advEmailField.getText());</span>
+<span class="nc" id="L328">        Integer minAge   = parseInt(advMinAgeField.getText());</span>
+<span class="nc" id="L329">        Integer maxAge   = parseInt(advMaxAgeField.getText());</span>
+<span class="nc" id="L330">        Double  minGrade = parseDouble(advMinGradeField.getText());</span>
+<span class="nc" id="L331">        Double  maxGrade = parseDouble(advMaxGradeField.getText());</span>
+
+<span class="nc" id="L333">        List&lt;Student&gt; all = searchCtrl.advancedSearch(id, fn, ln, em, minAge, maxAge, minGrade, maxGrade);</span>
+<span class="nc" id="L334">        paginate(all);</span>
+<span class="nc" id="L335">    }</span>
+
+    private void paginate(List&lt;Student&gt; all) {
+<span class="nc" id="L338">        int total   = all.size();</span>
+<span class="nc" id="L339">        int maxPage = Math.max(1, (int) Math.ceil((double) total / pageSize));</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">        if (currentPage &gt; maxPage) currentPage = maxPage;</span>
+<span class="nc" id="L341">        int from = (currentPage - 1) * pageSize;</span>
+<span class="nc" id="L342">        int to   = Math.min(from + pageSize, all.size());</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        List&lt;Student&gt; page = from &lt; all.size() ? all.subList(from, to) : List.of();</span>
+<span class="nc" id="L344">        table.setItems(FXCollections.observableArrayList(page));</span>
+<span class="nc" id="L345">        pageLabel.setText(&quot;Page &quot; + currentPage + &quot;/&quot; + maxPage + &quot; (&quot; + total + &quot; resultats)&quot;);</span>
+<span class="nc" id="L346">    }</span>
+
+    private int totalCount() {
+<span class="nc bnc" id="L349" title="All 2 branches missed.">        if (advancedMode) {</span>
+<span class="nc" id="L350">            return searchCtrl.countAdvancedSearch(</span>
+<span class="nc" id="L351">                    parseId(advIdField.getText()),</span>
+<span class="nc" id="L352">                    blank(advFirstField.getText()), blank(advLastField.getText()),</span>
+<span class="nc" id="L353">                    blank(advEmailField.getText()),</span>
+<span class="nc" id="L354">                    parseInt(advMinAgeField.getText()), parseInt(advMaxAgeField.getText()),</span>
+<span class="nc" id="L355">                    parseDouble(advMinGradeField.getText()), parseDouble(advMaxGradeField.getText()));</span>
+        }
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        if (!searchKeyword.isBlank()) return ctrl.searchStudents(searchKeyword).size();</span>
+<span class="nc" id="L358">        return ctrl.getTotalCount();</span>
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void resetAdvancedFields() {
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        for (TextField f : new TextField[]{advIdField, advFirstField, advLastField,</span>
+                advEmailField, advMinAgeField, advMaxAgeField,
+                advMinGradeField, advMaxGradeField}) {
+<span class="nc bnc" id="L367" title="All 2 branches missed.">            if (f != null) f.clear();</span>
+        }
+<span class="nc" id="L369">    }</span>
+
+    private TextField field(String prompt, double width) {
+<span class="nc" id="L372">        TextField f = new TextField();</span>
+<span class="nc" id="L373">        f.setPromptText(prompt);</span>
+<span class="nc" id="L374">        f.setPrefWidth(width);</span>
+<span class="nc" id="L375">        return f;</span>
+    }
+
+    private Label lbl(String text) {
+<span class="nc" id="L379">        Label l = new Label(text);</span>
+<span class="nc" id="L380">        l.setStyle(&quot;-fx-font-size: 11px;&quot;);</span>
+<span class="nc" id="L381">        return l;</span>
+    }
+
+    private FileChooser chooser(String desc, String ext) {
+<span class="nc" id="L385">        FileChooser fc = new FileChooser();</span>
+<span class="nc" id="L386">        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter(desc, ext));</span>
+<span class="nc" id="L387">        return fc;</span>
+    }
+
+<span class="nc" id="L390">    private Integer parseId(String s)     { try { return Integer.parseInt(s.trim()); } catch (Exception e) { return null; } }</span>
+<span class="nc" id="L391">    private Integer parseInt(String s)    { try { return Integer.parseInt(s.trim()); } catch (Exception e) { return null; } }</span>
+<span class="nc" id="L392">    private Double  parseDouble(String s) { try { return Double.parseDouble(s.trim().replace(&quot;,&quot;,&quot;.&quot;)); } catch (Exception e) { return null; } }</span>
+<span class="nc bnc" id="L393" title="All 4 branches missed.">    private String  blank(String s)       { return (s == null || s.isBlank()) ? null : s.trim(); }</span>
+
+    private void alert(Stage stage, String msg) {
+<span class="nc" id="L396">        new Alert(Alert.AlertType.WARNING, msg, ButtonType.OK).showAndWait();</span>
+<span class="nc" id="L397">    }</span>
+    private void info(Stage stage, String msg) {
+<span class="nc" id="L399">        new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait();</span>
+<span class="nc" id="L400">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

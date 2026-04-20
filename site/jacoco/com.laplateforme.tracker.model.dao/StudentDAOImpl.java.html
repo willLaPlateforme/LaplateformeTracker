@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentDAOImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.model.dao</a> &gt; <span class="el_source">StudentDAOImpl.java</span></div><h1>StudentDAOImpl.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.model.dao;
+
+import com.laplateforme.tracker.model.Student;
+import com.laplateforme.tracker.util.DatabaseConnection;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Implementation de StudentDAO.
+ * TOUTES les requetes SQL du projet sont ici — jamais dans les controllers ou views.
+ *
+ * Note sur LIKE : le prof a signale d'y faire attention.
+ * On utilise LOWER(colonne) LIKE LOWER(?) pour une recherche insensible a la casse
+ * ET on passe TOUJOURS le parametre via setString() pour eviter l'injection SQL.
+ * On ne concatene JAMAIS de saisie utilisateur directement dans le SQL.
+ */
+<span class="fc" id="L19">public class StudentDAOImpl implements StudentDAO {</span>
+
+<span class="fc" id="L21">    private final Connection conn = DatabaseConnection.getInstance();</span>
+
+    // ── CRUD ─────────────────────────────────────────────────────────────────
+
+    @Override
+    public void add(Student s) throws SQLException {
+<span class="nc" id="L27">        String sql = &quot;INSERT INTO student(first_name, last_name, age, grade, email)&quot;</span>
+                   + &quot; VALUES (?, ?, ?, ?, ?)&quot;;
+<span class="nc" id="L29">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L30">            stmt.setString(1, s.getFirstName());</span>
+<span class="nc" id="L31">            stmt.setString(2, s.getLastName());</span>
+<span class="nc" id="L32">            stmt.setInt(3, s.getAge());</span>
+<span class="nc" id="L33">            stmt.setDouble(4, s.getGrade());</span>
+<span class="nc bnc" id="L34" title="All 4 branches missed.">            if (s.getEmail() == null || s.getEmail().isBlank())</span>
+<span class="nc" id="L35">                stmt.setNull(5, Types.VARCHAR);</span>
+            else
+<span class="nc" id="L37">                stmt.setString(5, s.getEmail());</span>
+<span class="nc" id="L38">            stmt.executeUpdate();</span>
+        }
+<span class="nc" id="L40">    }</span>
+
+    @Override
+    public void update(Student s) throws SQLException {
+<span class="nc" id="L44">        String sql = &quot;UPDATE student SET first_name=?, last_name=?, age=?, grade=?, email=?&quot;</span>
+                   + &quot; WHERE id=?&quot;;
+<span class="nc" id="L46">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L47">            stmt.setString(1, s.getFirstName());</span>
+<span class="nc" id="L48">            stmt.setString(2, s.getLastName());</span>
+<span class="nc" id="L49">            stmt.setInt(3, s.getAge());</span>
+<span class="nc" id="L50">            stmt.setDouble(4, s.getGrade());</span>
+<span class="nc bnc" id="L51" title="All 4 branches missed.">            if (s.getEmail() == null || s.getEmail().isBlank())</span>
+<span class="nc" id="L52">                stmt.setNull(5, Types.VARCHAR);</span>
+            else
+<span class="nc" id="L54">                stmt.setString(5, s.getEmail());</span>
+<span class="nc" id="L55">            stmt.setInt(6, s.getId());</span>
+<span class="nc" id="L56">            stmt.executeUpdate();</span>
+        }
+<span class="nc" id="L58">    }</span>
+
+    @Override
+    public void delete(int id) throws SQLException {
+<span class="nc" id="L62">        try (PreparedStatement stmt = conn.prepareStatement(</span>
+                &quot;DELETE FROM student WHERE id=?&quot;)) {
+<span class="nc" id="L64">            stmt.setInt(1, id);</span>
+<span class="nc" id="L65">            stmt.executeUpdate();</span>
+        }
+<span class="nc" id="L67">    }</span>
+
+    @Override
+    public Student findById(int id) throws SQLException {
+<span class="nc" id="L71">        try (PreparedStatement stmt = conn.prepareStatement(</span>
+                &quot;SELECT * FROM student WHERE id=?&quot;)) {
+<span class="nc" id="L73">            stmt.setInt(1, id);</span>
+<span class="nc" id="L74">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (rs.next()) return map(rs);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        }</span>
+<span class="nc" id="L77">        return null;</span>
+    }
+
+    @Override
+    public List&lt;Student&gt; findAll() throws SQLException {
+<span class="nc" id="L82">        List&lt;Student&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L83">        try (ResultSet rs = conn.createStatement().executeQuery(</span>
+                &quot;SELECT * FROM student ORDER BY last_name, first_name&quot;)) {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            while (rs.next()) list.add(map(rs));</span>
+        }
+<span class="nc" id="L87">        return list;</span>
+    }
+
+    // ── Recherche simple (nom / prenom) ──────────────────────────────────────
+
+    /**
+     * Recherche par nom ou prenom.
+     * LIKE utilise avec PreparedStatement pour prevenir l'injection SQL.
+     * Le % est ajoute cote Java, pas dans la saisie utilisateur.
+     */
+    @Override
+    public List&lt;Student&gt; search(String keyword) throws SQLException {
+<span class="nc" id="L99">        String sql = &quot;SELECT * FROM student&quot;</span>
+                   + &quot; WHERE LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?&quot;
+                   + &quot; ORDER BY last_name, first_name&quot;;
+<span class="nc" id="L102">        String p = &quot;%&quot; + keyword.toLowerCase() + &quot;%&quot;;</span>
+<span class="nc" id="L103">        List&lt;Student&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L104">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L105">            stmt.setString(1, p);</span>
+<span class="nc" id="L106">            stmt.setString(2, p);</span>
+<span class="nc" id="L107">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            while (rs.next()) list.add(map(rs));</span>
+        }
+<span class="nc" id="L110">        return list;</span>
+    }
+
+    @Override
+    public int countSearch(String keyword) throws SQLException {
+<span class="nc" id="L115">        String sql = &quot;SELECT COUNT(*) FROM student&quot;</span>
+                   + &quot; WHERE LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?&quot;;
+<span class="nc" id="L117">        String p = &quot;%&quot; + keyword.toLowerCase() + &quot;%&quot;;</span>
+<span class="nc" id="L118">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L119">            stmt.setString(1, p);</span>
+<span class="nc" id="L120">            stmt.setString(2, p);</span>
+<span class="nc" id="L121">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc" id="L122">            rs.next();</span>
+<span class="nc" id="L123">            return rs.getInt(1);</span>
+        }
+    }
+
+    // ── Tri et pagination ─────────────────────────────────────────────────────
+
+    @Override
+    public List&lt;Student&gt; findAllSorted(String column, String order) throws SQLException {
+        // Whitelist stricte : on ne concatene QUE des valeurs controlees
+<span class="nc" id="L132">        List&lt;String&gt; allowedCols = List.of(&quot;id&quot;,&quot;first_name&quot;,&quot;last_name&quot;,&quot;age&quot;,&quot;grade&quot;,&quot;email&quot;);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (!allowedCols.contains(column)) column = &quot;last_name&quot;;</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">        if (!order.equalsIgnoreCase(&quot;ASC&quot;) &amp;&amp; !order.equalsIgnoreCase(&quot;DESC&quot;)) order = &quot;ASC&quot;;</span>
+<span class="nc" id="L135">        List&lt;Student&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L136">        try (ResultSet rs = conn.createStatement().executeQuery(</span>
+                &quot;SELECT * FROM student ORDER BY &quot; + column + &quot; &quot; + order)) {
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            while (rs.next()) list.add(map(rs));</span>
+        }
+<span class="nc" id="L140">        return list;</span>
+    }
+
+    @Override
+    public List&lt;Student&gt; findPage(int limit, int offset) throws SQLException {
+<span class="nc" id="L145">        String sql = &quot;SELECT * FROM student ORDER BY last_name, first_name LIMIT ? OFFSET ?&quot;;</span>
+<span class="nc" id="L146">        List&lt;Student&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L147">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L148">            stmt.setInt(1, limit);</span>
+<span class="nc" id="L149">            stmt.setInt(2, offset);</span>
+<span class="nc" id="L150">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            while (rs.next()) list.add(map(rs));</span>
+        }
+<span class="nc" id="L153">        return list;</span>
+    }
+
+    @Override
+    public int countAll() throws SQLException {
+<span class="nc" id="L158">        try (ResultSet rs = conn.createStatement().executeQuery(</span>
+                &quot;SELECT COUNT(*) FROM student&quot;)) {
+<span class="nc" id="L160">            rs.next();</span>
+<span class="nc" id="L161">            return rs.getInt(1);</span>
+        }
+    }
+
+    // ── Recherche avancee multi-criteres ──────────────────────────────────────
+
+    /**
+     * Recherche avancee : tous les criteres sont optionnels (null = ignore).
+     * Criteres disponibles : ID exact, prenom, nom, email, age min/max, note min/max.
+     *
+     * Construction dynamique de la requete avec PreparedStatement :
+     * les valeurs sont TOUJOURS passees en parametre, jamais concatenees.
+     */
+    @Override
+    public List&lt;Student&gt; advancedSearch(Integer id,
+                                         String firstName, String lastName, String email,
+                                         Integer minAge, Integer maxAge,
+                                         Double minGrade, Double maxGrade) throws SQLException {
+<span class="nc" id="L179">        StringBuilder sql = new StringBuilder(&quot;SELECT * FROM student WHERE 1=1&quot;);</span>
+<span class="nc" id="L180">        List&lt;Object&gt; params = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (id        != null) { sql.append(&quot; AND id = ?&quot;);                           params.add(id); }</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">        if (firstName != null &amp;&amp; !firstName.isBlank()) {</span>
+<span class="nc" id="L184">            sql.append(&quot; AND LOWER(first_name) LIKE ?&quot;);</span>
+<span class="nc" id="L185">            params.add(&quot;%&quot; + firstName.trim().toLowerCase() + &quot;%&quot;);</span>
+        }
+<span class="nc bnc" id="L187" title="All 4 branches missed.">        if (lastName  != null &amp;&amp; !lastName.isBlank()) {</span>
+<span class="nc" id="L188">            sql.append(&quot; AND LOWER(last_name) LIKE ?&quot;);</span>
+<span class="nc" id="L189">            params.add(&quot;%&quot; + lastName.trim().toLowerCase() + &quot;%&quot;);</span>
+        }
+<span class="nc bnc" id="L191" title="All 4 branches missed.">        if (email     != null &amp;&amp; !email.isBlank()) {</span>
+<span class="nc" id="L192">            sql.append(&quot; AND LOWER(email) LIKE ?&quot;);</span>
+<span class="nc" id="L193">            params.add(&quot;%&quot; + email.trim().toLowerCase() + &quot;%&quot;);</span>
+        }
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (minAge    != null) { sql.append(&quot; AND age &gt;= ?&quot;);   params.add(minAge); }</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (maxAge    != null) { sql.append(&quot; AND age &lt;= ?&quot;);   params.add(maxAge); }</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (minGrade  != null) { sql.append(&quot; AND grade &gt;= ?&quot;); params.add(minGrade); }</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (maxGrade  != null) { sql.append(&quot; AND grade &lt;= ?&quot;); params.add(maxGrade); }</span>
+
+<span class="nc" id="L200">        sql.append(&quot; ORDER BY last_name, first_name&quot;);</span>
+<span class="nc" id="L201">        return executeSearchQuery(sql.toString(), params);</span>
+    }
+
+    @Override
+    public int countAdvancedSearch(Integer id,
+                                    String firstName, String lastName, String email,
+                                    Integer minAge, Integer maxAge,
+                                    Double minGrade, Double maxGrade) throws SQLException {
+<span class="nc" id="L209">        StringBuilder sql = new StringBuilder(&quot;SELECT COUNT(*) FROM student WHERE 1=1&quot;);</span>
+<span class="nc" id="L210">        List&lt;Object&gt; params = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (id        != null) { sql.append(&quot; AND id = ?&quot;);                           params.add(id); }</span>
+<span class="nc bnc" id="L213" title="All 4 branches missed.">        if (firstName != null &amp;&amp; !firstName.isBlank()) {</span>
+<span class="nc" id="L214">            sql.append(&quot; AND LOWER(first_name) LIKE ?&quot;);</span>
+<span class="nc" id="L215">            params.add(&quot;%&quot; + firstName.trim().toLowerCase() + &quot;%&quot;);</span>
+        }
+<span class="nc bnc" id="L217" title="All 4 branches missed.">        if (lastName  != null &amp;&amp; !lastName.isBlank()) {</span>
+<span class="nc" id="L218">            sql.append(&quot; AND LOWER(last_name) LIKE ?&quot;);</span>
+<span class="nc" id="L219">            params.add(&quot;%&quot; + lastName.trim().toLowerCase() + &quot;%&quot;);</span>
+        }
+<span class="nc bnc" id="L221" title="All 4 branches missed.">        if (email     != null &amp;&amp; !email.isBlank()) {</span>
+<span class="nc" id="L222">            sql.append(&quot; AND LOWER(email) LIKE ?&quot;);</span>
+<span class="nc" id="L223">            params.add(&quot;%&quot; + email.trim().toLowerCase() + &quot;%&quot;);</span>
+        }
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (minAge    != null) { sql.append(&quot; AND age &gt;= ?&quot;);   params.add(minAge); }</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (maxAge    != null) { sql.append(&quot; AND age &lt;= ?&quot;);   params.add(maxAge); }</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (minGrade  != null) { sql.append(&quot; AND grade &gt;= ?&quot;); params.add(minGrade); }</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">        if (maxGrade  != null) { sql.append(&quot; AND grade &lt;= ?&quot;); params.add(maxGrade); }</span>
+
+<span class="nc" id="L230">        try (PreparedStatement stmt = buildStmt(sql.toString(), params)) {</span>
+<span class="nc" id="L231">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc" id="L232">            rs.next();</span>
+<span class="nc" id="L233">            return rs.getInt(1);</span>
+        }
+    }
+
+    // ── Anti-doublons ─────────────────────────────────────────────────────────
+
+    @Override
+    public boolean existsByFullName(String firstName, String lastName) throws SQLException {
+<span class="nc" id="L241">        String sql = &quot;SELECT COUNT(*) FROM student&quot;</span>
+                   + &quot; WHERE LOWER(first_name)=? AND LOWER(last_name)=?&quot;;
+<span class="nc" id="L243">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L244">            stmt.setString(1, firstName.trim().toLowerCase());</span>
+<span class="nc" id="L245">            stmt.setString(2, lastName.trim().toLowerCase());</span>
+<span class="nc" id="L246">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc" id="L247">            rs.next();</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">            return rs.getInt(1) &gt; 0;</span>
+        }
+    }
+
+    @Override
+    public boolean existsByFullNameExcludeId(String firstName, String lastName,
+                                              int excludeId) throws SQLException {
+<span class="nc" id="L255">        String sql = &quot;SELECT COUNT(*) FROM student&quot;</span>
+                   + &quot; WHERE LOWER(first_name)=? AND LOWER(last_name)=? AND id != ?&quot;;
+<span class="nc" id="L257">        try (PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+<span class="nc" id="L258">            stmt.setString(1, firstName.trim().toLowerCase());</span>
+<span class="nc" id="L259">            stmt.setString(2, lastName.trim().toLowerCase());</span>
+<span class="nc" id="L260">            stmt.setInt(3, excludeId);</span>
+<span class="nc" id="L261">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc" id="L262">            rs.next();</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">            return rs.getInt(1) &gt; 0;</span>
+        }
+    }
+
+    // ── Helpers internes ──────────────────────────────────────────────────────
+
+    private List&lt;Student&gt; executeSearchQuery(String sql, List&lt;Object&gt; params) throws SQLException {
+<span class="nc" id="L270">        List&lt;Student&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L271">        try (PreparedStatement stmt = buildStmt(sql, params)) {</span>
+<span class="nc" id="L272">            ResultSet rs = stmt.executeQuery();</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">            while (rs.next()) list.add(map(rs));</span>
+        }
+<span class="nc" id="L275">        return list;</span>
+    }
+
+    private PreparedStatement buildStmt(String sql, List&lt;Object&gt; params) throws SQLException {
+<span class="nc" id="L279">        PreparedStatement stmt = conn.prepareStatement(sql);</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        for (int i = 0; i &lt; params.size(); i++) {</span>
+<span class="nc" id="L281">            Object p = params.get(i);</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">            if      (p instanceof Integer) stmt.setInt(i + 1, (Integer) p);</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">            else if (p instanceof Double)  stmt.setDouble(i + 1, (Double) p);</span>
+<span class="nc" id="L284">            else                           stmt.setString(i + 1, String.valueOf(p));</span>
+        }
+<span class="nc" id="L286">        return stmt;</span>
+    }
+
+    /** Convertit une ligne SQL en objet Student. */
+    private Student map(ResultSet rs) throws SQLException {
+<span class="nc" id="L291">        Student s = new Student(</span>
+<span class="nc" id="L292">                rs.getString(&quot;first_name&quot;),</span>
+<span class="nc" id="L293">                rs.getString(&quot;last_name&quot;),</span>
+<span class="nc" id="L294">                rs.getInt(&quot;age&quot;),</span>
+<span class="nc" id="L295">                rs.getDouble(&quot;grade&quot;),</span>
+<span class="nc" id="L296">                rs.getString(&quot;email&quot;));</span>
+<span class="nc" id="L297">        s.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L298">        return s;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

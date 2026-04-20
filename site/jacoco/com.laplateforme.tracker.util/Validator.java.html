@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Validator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tracker</a> &gt; <a href="index.source.html" class="el_package">com.laplateforme.tracker.util</a> &gt; <span class="el_source">Validator.java</span></div><h1>Validator.java</h1><pre class="source lang-java linenums">package com.laplateforme.tracker.util;
+
+import java.util.regex.Pattern;
+
+<span class="nc" id="L5">public class Validator {</span>
+
+<span class="fc" id="L7">    private static final Pattern UPPER = Pattern.compile(&quot;[A-Z]&quot;);</span>
+<span class="fc" id="L8">    private static final Pattern LOWER = Pattern.compile(&quot;[a-z]&quot;);</span>
+<span class="fc" id="L9">    private static final Pattern DIGIT = Pattern.compile(&quot;[0-9]&quot;);</span>
+
+    public static String validatePassword(String password) {
+<span class="fc bfc" id="L12" title="All 4 branches covered.">        if (password == null || password.length() &lt; 8)</span>
+<span class="fc" id="L13">            return &quot;Mot de passe : 8 caracteres minimum.&quot;;</span>
+<span class="fc bfc" id="L14" title="All 2 branches covered.">        if (!UPPER.matcher(password).find())</span>
+<span class="fc" id="L15">            return &quot;Mot de passe : au moins une MAJUSCULE requise.&quot;;</span>
+<span class="pc bpc" id="L16" title="1 of 2 branches missed.">        if (!LOWER.matcher(password).find())</span>
+<span class="nc" id="L17">            return &quot;Mot de passe : au moins une minuscule requise.&quot;;</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if (!DIGIT.matcher(password).find())</span>
+<span class="fc" id="L19">            return &quot;Mot de passe : au moins un chiffre requis.&quot;;</span>
+<span class="fc" id="L20">        return null;</span>
+    }
+
+    public static String validateStudent(String firstName, String lastName,
+                                         String ageStr, String gradeStr, String email) {
+<span class="fc bfc" id="L25" title="All 4 branches covered.">        if (firstName == null || firstName.isBlank())</span>
+<span class="fc" id="L26">            return &quot;Le prenom est obligatoire.&quot;;</span>
+<span class="fc bfc" id="L27" title="All 4 branches covered.">        if (lastName == null || lastName.isBlank())</span>
+<span class="fc" id="L28">            return &quot;Le nom est obligatoire.&quot;;</span>
+        try {
+<span class="fc" id="L30">            int age = Integer.parseInt(ageStr);</span>
+<span class="fc bfc" id="L31" title="All 4 branches covered.">            if (age &lt;= 0 || age &gt; 150) return &quot;Age invalide (1-150).&quot;;</span>
+<span class="fc" id="L32">        } catch (NumberFormatException e) { return &quot;Age invalide.&quot;; }</span>
+        try {
+<span class="fc" id="L34">            double grade = Double.parseDouble(gradeStr.replace(&quot;,&quot;, &quot;.&quot;));</span>
+<span class="fc bfc" id="L35" title="All 4 branches covered.">            if (grade &lt; 0 || grade &gt; 20) return &quot;Note invalide (0-20).&quot;;</span>
+<span class="fc" id="L36">        } catch (NumberFormatException e) { return &quot;Note invalide.&quot;; }</span>
+<span class="fc bfc" id="L37" title="All 4 branches covered.">        if (email != null &amp;&amp; !email.isBlank())</span>
+<span class="fc bfc" id="L38" title="All 4 branches covered.">            if (!email.contains(&quot;@&quot;) || !email.contains(&quot;.&quot;)) return &quot;Email invalide.&quot;;</span>
+<span class="fc" id="L39">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
